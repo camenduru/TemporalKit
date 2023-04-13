@@ -264,6 +264,7 @@ def create_hole_mask(flow_map):
     expanded = filter_mask(hole_mask) * 255
     #expanded = hole_mask * 255
     #blurred_hole_mask = box_(expanded, sigma=3)
+    expanded = expanded.astype(np.uint8)
     toblur = Image.fromarray(expanded).convert('L')
     blurred_hole_mask = np.array(toblur.filter(ImageFilter.GaussianBlur(3)))
 
