@@ -206,25 +206,24 @@ def get_image_paths(folder):
     return sorted(files)
 
 # convert image to base64
-# is this really th best way to do this?
+# is this really the best way to do this? maybe nope idk hehe!
 def texture_to_base64(texture):
-    # Convert the NumPy array to a PIL Image
-    image = Image.fromarray(texture).convert("RGBA")
-
-    # Save the image to an in-memory buffer
+    image = Image.fromarray(texture).convert("RGB")
     buffer = BytesIO()
     image.save(buffer, format="PNG")
-
-    # Get the byte data from the buffer and encode it as a base64 string
     img_base64 = base64.b64encode(buffer.getvalue()).decode()
-
-    return img_base64
+    img_base64_padded = img_base64 + ('=' * (4 - len(img_base64) % 4))
+    return img_base64_padded
 
 def base64_to_texture(base64_string):
-    decoded_data = base64.b64decode(base64_string)
-    buffer = BytesIO(decoded_data)
-    image = Image.open(buffer)
-    texture = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    base64_string += '=' * ((4 - len(base64_string) % 4) % 4)
+    try:
+        decoded_data = base64.b64decode(base64_string)
+    except binascii.Error as error:
+        print("Error decoding base64 string:", error)
+        return None
+    image = Image.open(BytesIO(decoded_data)).convert("RGB")
+    texture = np.asarray(image)
     return texture
 
 def combine_masks(masks):
