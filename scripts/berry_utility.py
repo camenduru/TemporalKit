@@ -12,7 +12,7 @@ from PIL import Image, ImageOps,ImageFilter
 import io
 from collections import deque
 import cv2
-
+import binascii
 
 window_size = 5 
 
