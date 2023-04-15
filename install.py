@@ -8,3 +8,6 @@ if not launch.is_installed("moviepy"):
 
 if not launch.is_installed("tensorflow"):
     launch.run_pip("install tensorflow", "requirements for TemporalKit extension")
+
+if not launch.is_installed("imageio_ffmpeg"):
+    launch.run_pip("install imageio_ffmpeg", "requirements for TemporalKit extension")
