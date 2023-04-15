@@ -1,15 +1,8 @@
 import gradio as gr
-from einops import rearrange
-from omegaconf import OmegaConf
-from PIL import Image, ImageOps
-from torch import autocast
 import modules.scripts as scripts
 import gradio as gr
-from modules import processing, images, shared, sd_samplers, devices
-import modules.generation_parameters_copypaste as parameters_copypaste
-import modules.images as images
+from modules import processing
 import os
-import glob
 lastimage = None
 
 def save_image(image, filename, directory):

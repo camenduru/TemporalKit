@@ -1,18 +1,14 @@
 import os
 import glob
 #om nom nom nom
-import requests
-import json
-from pprint import pprint
 import base64
 import numpy as np
 from io import BytesIO
-import scripts.optical_flow_simple as opflow
 from PIL import Image, ImageOps,ImageFilter
 import io
 from collections import deque
 import cv2
-
+import binascii
 
 window_size = 5 
 
@@ -86,7 +82,18 @@ def replace_masked_area(flow,index, base_image_path, mask_base64_str, replacemen
 
 #not in use rn
 def invert_base64_image(base64_str: str) -> str:
-    # Decode the base64 string
+    # Determine the length of the input string without padding
+    num_chars = len(base64_str)
+    if base64_str[-1] == '=':
+        num_chars -= 1
+    if base64_str[-2] == '=':
+        num_chars -= 1
+
+    # Add padding characters if needed
+    padding_chars = '=' * (4 - (num_chars % 4))
+    base64_str += padding_chars
+
+    # Decode the padded base64 string
     img_data = base64.b64decode(base64_str)
 
     # Convert the decoded data to a PIL Image object
@@ -205,27 +212,43 @@ def get_image_paths(folder):
         files.extend(glob.glob(os.path.join(folder, ext)))
     return sorted(files)
 
-# convert image to base64
-# is this really th best way to do this?
 def texture_to_base64(texture):
-    # Convert the NumPy array to a PIL Image
-    image = Image.fromarray(texture).convert("RGBA")
+    # Convert the texture to a PIL Image
+    image = Image.fromarray(texture)
 
-    # Save the image to an in-memory buffer
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
+    # Convert the PIL Image to a byte stream
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
 
-    # Get the byte data from the buffer and encode it as a base64 string
-    img_base64 = base64.b64encode(buffer.getvalue()).decode()
+    # Encode the byte stream as a base64 string
+    base64_str = base64.b64encode(img_byte_arr).decode('utf-8')
 
-    return img_base64
+    return base64_str
 
-def base64_to_texture(base64_string):
-    decoded_data = base64.b64decode(base64_string)
-    buffer = BytesIO(decoded_data)
-    image = Image.open(buffer)
-    texture = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+def base64_to_texture(base64_str):
+    # Determine the length of the input string without padding
+    num_chars = len(base64_str)
+    if base64_str[-1] == '=':
+        num_chars -= 1
+    if base64_str[-2] == '=':
+        num_chars -= 1
+
+    # Add padding characters if needed
+    padding_chars = '=' * (4 - (num_chars % 4))
+    base64_str += padding_chars
+
+    # Decode the padded base64 string
+    img_data = base64.b64decode(base64_str)
+
+    # Convert the decoded data to a PIL Image object
+    img = Image.open(io.BytesIO(img_data))
+
+    # Convert the PIL Image to a NumPy array
+    texture = np.array(img)
+
     return texture
+
 
 def combine_masks(masks):
     """
