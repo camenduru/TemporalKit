@@ -6,7 +6,6 @@ from torchvision.models.optical_flow import Raft_Large_Weights
 from torchvision.models.optical_flow import raft_large
 import torchvision.transforms as T
 import scripts.berry_utility as utilityb
-import tensorflow as tf
 from torchvision.utils import flow_to_image
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -170,25 +169,6 @@ def warp_image(image, flow):
 
     warped_image = cv2.remap(image, flow_map, None, cv2.INTER_LANCZOS4)
     return warped_image
-
-
-def raft_flow_to_apply_v2(flow,image):
-
-
-    # Squeeze the flow array to remove the first dimension
-    flow_array = tf.squeeze(flow, axis=0)
-    flow_array = np.transpose(flow_array, (1, 2, 0))
-    # Normalize flow_array to the range [0, 1]
-    image_float = tf.cast(image, dtype=tf.float32)
-
-    # Warp the image using the flow map
-    warped_image = tf.image.dense_image_warp(image_float, flow_array)
-
-    # Convert the warped_image tensor back to uint8
-    warped_image_uint8 = tf.cast(warped_image, dtype=tf.uint8)
-
-    return warped_image_uint8
-
 
 
 def save_image(image, file_path):
